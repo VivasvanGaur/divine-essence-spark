@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -172,8 +171,20 @@
 
 .scrolling-text {
   display: inline-block;
-  animation: scroll-x 20s linear infinite;
   padding-right: 50px;
+}
+
+@keyframes scroll-x {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+.animate-scroll-x {
+  animation: scroll-x 20s linear infinite;
 }
 
 .scrolling-text-container:hover .scrolling-text {
