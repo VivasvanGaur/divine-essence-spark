@@ -41,7 +41,9 @@ const DailyQuote = () => {
     // Function to select a daily quote based on the date
     const getDailyQuote = () => {
       const today = new Date();
-      const dayOfYear = Math.floor((today - new Date(today.getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24));
+      const startOfYear = new Date(today.getFullYear(), 0, 0);
+      const diff = today.getTime() - startOfYear.getTime();
+      const dayOfYear = Math.floor(diff / (1000 * 60 * 60 * 24));
       const index = dayOfYear % spiritualQuotes.length;
       return spiritualQuotes[index];
     };
