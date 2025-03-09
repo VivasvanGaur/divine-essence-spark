@@ -43,6 +43,13 @@ export async function getBlogById(id: string): Promise<BlogPost> {
   return fetchApi<BlogPost>(`/blogs/${id}`);
 }
 
+export async function createBlog(blogData: Omit<BlogPost, "id">): Promise<BlogPost> {
+  return fetchApi<BlogPost>("/blogs", {
+    method: "POST",
+    body: JSON.stringify(blogData),
+  });
+}
+
 // Quote API endpoints
 export interface Quote {
   quote: string;
@@ -50,9 +57,16 @@ export interface Quote {
 }
 
 export async function getRandomQuote(): Promise<Quote> {
-  return fetchApi<Quote>("/quotes/random");
+  return fetchApi<Quote>("/quotes/daily");
 }
 
 export async function getAllQuotes(): Promise<Quote[]> {
-  return fetchApi<Quote[]>("/quotes");
+  return fetchApi<Quote[]>("/quotes/list");
+}
+
+export async function createQuote(quoteData: Quote): Promise<Quote> {
+  return fetchApi<Quote>("/quotes", {
+    method: "POST",
+    body: JSON.stringify(quoteData),
+  });
 }

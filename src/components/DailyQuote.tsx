@@ -1,7 +1,9 @@
 
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { Link } from 'react-router-dom';
 import { getRandomQuote } from '@/lib/api';
+import { PlusIcon } from 'lucide-react';
 
 const DailyQuote = () => {
   // Fetch quote from API
@@ -26,9 +28,19 @@ const DailyQuote = () => {
     <section id="daily-wisdom" className="section-padding bg-white">
       <div className="divine-container">
         <div className="max-w-4xl mx-auto">
-          <h2 className="section-heading text-center mb-16">
-            <span className="text-divine">Daily</span> Wisdom
-          </h2>
+          <div className="flex flex-col md:flex-row md:items-center justify-between mb-16 gap-4">
+            <h2 className="section-heading">
+              <span className="text-divine">Daily</span> Wisdom
+            </h2>
+            
+            <Link
+              to="/submit-quote"
+              className="flex items-center gap-2 text-divine-dark hover:text-divine transition-colors self-start md:self-auto"
+            >
+              <PlusIcon size={16} />
+              <span>Submit a Quote</span>
+            </Link>
+          </div>
           
           <div className="relative divine-card p-8 md:p-12 overflow-hidden">
             {/* Decorative elements */}
