@@ -8,6 +8,7 @@ export type BlogPost = {
   category: string;
   date: string;
   imageSrc?: string;
+  content?: string; // Add content field for full blog post display
 };
 
 type BlogCardProps = {

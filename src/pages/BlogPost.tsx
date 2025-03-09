@@ -1,44 +1,11 @@
+
 import { useParams } from 'react-router-dom';
 import Layout from '@/components/Layout';
 import { BlogPost as BlogPostType } from '@/components/BlogCard';
-import { toast } from '@/components/ui/use-toast';
 import { ArrowLeft, Calendar, Tag } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { getBlogById, getAllBlogs } from '@/lib/api';
-
-// Sample content for blog posts - this would ideally come from the API
-const getFullContent = (id: string) => {
-  return `
-<p>In the sacred journey of life, we often find ourselves seeking deeper meaning and connection. This profound quest leads us through valleys of challenge and mountains of insight, all woven together in the tapestry of existence.</p>
-
-<p>The ancient seers and spiritual masters have always taught that true transformation begins within. By cultivating awareness of our inner landscape, we gradually unveil the divine light that already dwells in our hearts.</p>
-
-<h3>The Practice of Presence</h3>
-
-<p>One of the most essential spiritual practices is simply being present. In a world constantly pulling our attention in countless directions, the discipline of returning to the now becomes revolutionary.</p>
-
-<p>When we fully inhabit each moment, we discover that life isn't happening to us, but through us. This shift in perspective opens doorways to grace that transform our experience from the inside out.</p>
-
-<h3>Opening to Divine Guidance</h3>
-
-<p>The spiritual path is not meant to be walked alone. By opening our hearts to divine guidance, we invite wisdom beyond our limited understanding to illuminate our way forward.</p>
-
-<p>This guidance often comes in whispers rather than shouts—in moments of silence, in nature's beauty, in the eyes of a loved one, or in the quiet intuition that arises when the mind grows still.</p>
-
-<h3>The Transformative Power of Devotion</h3>
-
-<p>Devotion is the heart's natural expression of love for the divine. When we cultivate devotion, we water the seeds of joy, compassion, and service that lie within us.</p>
-
-<p>Through regular practice, meditation, prayer, or selfless service, we align ourselves with the greater rhythm of life. This alignment brings a sense of purpose and peace that transcends the fluctuations of worldly existence.</p>
-
-<h3>Embracing the Journey</h3>
-
-<p>The spiritual path is not a destination but an ever-unfolding journey. Each step we take with awareness becomes a sacred offering to life itself.</p>
-
-<p>May your own journey be filled with discovery, transformation, and the profound joy that comes from embracing your true divine nature.</p>
-`;
-};
 
 const BlogPost = () => {
   const { id } = useParams<{ id: string }>();
@@ -158,7 +125,7 @@ const BlogPost = () => {
             <div 
               className="prose prose-lg max-w-none prose-headings:font-serif prose-headings:text-divine-dark prose-p:text-divine-dark/80 mb-12 animate-fade-in"
               style={{ animationDelay: '0.2s' }}
-              dangerouslySetInnerHTML={{ __html: getFullContent(post.id) }}
+              dangerouslySetInnerHTML={{ __html: post.content || '' }}
             />
             
             {/* Divider */}
