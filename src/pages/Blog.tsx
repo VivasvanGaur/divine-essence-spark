@@ -1,10 +1,9 @@
+
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "react-router-dom";
 import Layout from "@/components/Layout";
 import BlogCard, { BlogPost } from "@/components/BlogCard";
 import { getAllBlogs } from "@/lib/api";
-import { PlusIcon } from "lucide-react";
 
 const Blog = () => {
   const [category, setCategory] = useState<string | null>(null);
@@ -28,18 +27,10 @@ const Blog = () => {
     <Layout>
       <section className="section-padding bg-white">
         <div className="divine-container">
-          <div className="flex flex-col md:flex-row md:items-center justify-between mb-10 gap-4">
+          <div className="mb-10">
             <h1 className="section-heading">
               <span className="text-divine">Spiritual</span> Insights
             </h1>
-            
-            <Link
-              to="/blog/create"
-              className="divine-button flex items-center gap-2 self-start md:self-auto"
-            >
-              <PlusIcon size={18} />
-              <span>Create New Blog</span>
-            </Link>
           </div>
           
           {/* Category filter - only show if we have categories */}
