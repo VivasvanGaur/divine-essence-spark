@@ -1,65 +1,13 @@
-
 import { useParams } from 'react-router-dom';
-import { useState, useEffect } from 'react';
 import Layout from '@/components/Layout';
 import { BlogPost as BlogPostType } from '@/components/BlogCard';
 import { toast } from '@/components/ui/use-toast';
 import { ArrowLeft, Calendar, Tag } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { getBlogById, getAllBlogs } from '@/lib/api';
 
-// Sample blog posts data - same as in Blog.tsx for consistency
-const allPosts: BlogPostType[] = [
-  {
-    id: "1",
-    title: "The Path to Inner Peace Through Daily Meditation",
-    excerpt: "Discover how establishing a consistent meditation practice can transform your inner landscape and bring lasting peace to your daily life.",
-    category: "meditation",
-    date: "June 15, 2023",
-    imageSrc: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80"
-  },
-  {
-    id: "2",
-    title: "Ancient Wisdom for Modern Living: Applying Spiritual Principles Today",
-    excerpt: "How can ancient spiritual teachings help us navigate the challenges of contemporary life? This article explores practical applications of timeless wisdom.",
-    category: "teachings",
-    date: "July 3, 2023",
-    imageSrc: "https://images.unsplash.com/photo-1609710228159-0fa9bd7c0827?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80"
-  },
-  {
-    id: "3",
-    title: "The Sacred Art of Devotion: Opening Your Heart to Divine Grace",
-    excerpt: "Devotion is more than religious ritual—it's a transformative practice that can open your heart to receive divine grace and experience profound spiritual connection.",
-    category: "devotion",
-    date: "August 12, 2023",
-    imageSrc: "https://images.unsplash.com/photo-1518457607834-6e8d80c183c5?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=687&q=80"
-  },
-  {
-    id: "4",
-    title: "Finding Your Dharma: Discovering Your True Purpose in Life",
-    excerpt: "What is dharma, and how can understanding this concept help you align with your authentic purpose? Learn practical steps for uncovering your life's mission.",
-    category: "purpose",
-    date: "September 5, 2023",
-    imageSrc: "https://images.unsplash.com/photo-1533630757306-cbadb934bcb1?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1074&q=80"
-  },
-  {
-    id: "5",
-    title: "The Healing Power of Forgiveness: A Spiritual Perspective",
-    excerpt: "Forgiveness is not just a moral virtue but a powerful spiritual practice that can heal deep wounds and transform relationships. Learn the sacred approach to letting go.",
-    category: "healing",
-    date: "October 20, 2023",
-    imageSrc: "https://images.unsplash.com/photo-1617791160505-6f00504e3519?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80"
-  },
-  {
-    id: "6",
-    title: "Sacred Silence: The Transformative Power of Stillness",
-    excerpt: "In a world of constant noise and distraction, discover how embracing silence can deepen your spiritual practice and reveal profound inner truths.",
-    category: "practice",
-    date: "November 8, 2023",
-    imageSrc: "https://images.unsplash.com/photo-1551632436-cbf8dd35adfa?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1171&q=80"
-  }
-];
-
-// Sample content for blog posts
+// Sample content for blog posts - this would ideally come from the API
 const getFullContent = (id: string) => {
   return `
 <p>In the sacred journey of life, we often find ourselves seeking deeper meaning and connection. This profound quest leads us through valleys of challenge and mountains of insight, all woven together in the tapestry of existence.</p>
@@ -94,51 +42,52 @@ const getFullContent = (id: string) => {
 
 const BlogPost = () => {
   const { id } = useParams<{ id: string }>();
-  const [post, setPost] = useState<BlogPostType | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [relatedPosts, setRelatedPosts] = useState<BlogPostType[]>([]);
-
-  useEffect(() => {
-    // Simulate loading
-    setIsLoading(true);
+  
+  // Fetch single blog post
+  const { 
+    data: post, 
+    isLoading: isPostLoading,
+    error: postError
+  } = useQuery({
+    queryKey: ['blog', id],
+    queryFn: () => getBlogById(id || ''),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: 2,
+    enabled: !!id
+  });
+  
+  // Fetch all blogs for related posts
+  const { 
+    data: allPosts = [],
+    isLoading: isRelatedLoading
+  } = useQuery({
+    queryKey: ['blogs'],
+    queryFn: getAllBlogs,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    enabled: !!post
+  });
+  
+  // Find related posts by category
+  const relatedPosts = post 
+    ? allPosts.filter(p => p.category === post.category && p.id !== id).slice(0, 3)
+    : [];
     
-    // Find the post by ID
-    const foundPost = allPosts.find(post => post.id === id);
-    
-    if (foundPost) {
-      setPost(foundPost);
-      
-      // Find related posts (same category, excluding current post)
-      const related = allPosts
-        .filter(p => p.category === foundPost.category && p.id !== id)
-        .slice(0, 3);
-      
-      setRelatedPosts(related);
-    } else {
-      // Show error toast if post not found
-      toast({
-        title: "Post not found",
-        description: "The requested blog post could not be found.",
-        variant: "destructive"
-      });
-    }
-    
-    setIsLoading(false);
-  }, [id]);
+  const isLoading = isPostLoading || isRelatedLoading;
 
   if (isLoading) {
     return (
       <Layout>
         <div className="pt-32 pb-16 divine-container">
           <div className="flex items-center justify-center h-64">
-            <div className="animate-pulse-subtle">Loading...</div>
+            <div className="w-12 h-12 rounded-full border-2 border-divine border-t-transparent animate-spin mx-auto" />
+            <p className="ml-4 text-divine-dark/70">Loading teaching...</p>
           </div>
         </div>
       </Layout>
     );
   }
 
-  if (!post) {
+  if (postError || !post) {
     return (
       <Layout>
         <div className="pt-32 pb-16 divine-container">

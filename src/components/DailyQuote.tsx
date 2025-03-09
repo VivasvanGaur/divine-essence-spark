@@ -1,63 +1,26 @@
 
 import { useState, useEffect } from 'react';
-
-// Sample quotes that will change daily
-const spiritualQuotes = [
-  {
-    quote: "The best way to find yourself is to lose yourself in the service of others.",
-    author: "Mahatma Gandhi"
-  },
-  {
-    quote: "We are not human beings having a spiritual experience. We are spiritual beings having a human experience.",
-    author: "Pierre Teilhard de Chardin"
-  },
-  {
-    quote: "The spiritual journey is the unlearning of fear and the acceptance of love.",
-    author: "Marianne Williamson"
-  },
-  {
-    quote: "The goal of spiritual practice is full recovery, and the only thing you need to recover from is a fractured sense of self.",
-    author: "Marianne Williamson"
-  },
-  {
-    quote: "You have to grow from the inside out. None can teach you, none can make you spiritual. There is no other teacher but your own soul.",
-    author: "Swami Vivekananda"
-  },
-  {
-    quote: "The privilege of a lifetime is to become who you truly are.",
-    author: "Carl Jung"
-  },
-  {
-    quote: "We are shaped by our thoughts; we become what we think. When the mind is pure, joy follows like a shadow that never leaves.",
-    author: "Buddha"
-  }
-];
+import { useQuery } from '@tanstack/react-query';
+import { getRandomQuote } from '@/lib/api';
 
 const DailyQuote = () => {
-  const [quote, setQuote] = useState({ quote: "", author: "" });
-  const [isLoading, setIsLoading] = useState(true);
+  // Fetch quote from API
+  const { 
+    data, 
+    isLoading, 
+    error 
+  } = useQuery({
+    queryKey: ['daily-quote'],
+    queryFn: getRandomQuote,
+    staleTime: 24 * 60 * 60 * 1000, // 24 hours - keep the daily quote consistent for a day
+    retry: 2
+  });
 
-  useEffect(() => {
-    // Function to select a daily quote based on the date
-    const getDailyQuote = () => {
-      const today = new Date();
-      const startOfYear = new Date(today.getFullYear(), 0, 0);
-      const diff = today.getTime() - startOfYear.getTime();
-      const dayOfYear = Math.floor(diff / (1000 * 60 * 60 * 24));
-      const index = dayOfYear % spiritualQuotes.length;
-      return spiritualQuotes[index];
-    };
-
-    // Set the daily quote
-    setQuote(getDailyQuote());
-    
-    // Simulate loading (for aesthetic purposes)
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 800);
-
-    return () => clearTimeout(timer);
-  }, []);
+  // If API fails, fall back to a default quote
+  const quote = data || { 
+    quote: "The goal of spiritual practice is full recovery, and the only thing you need to recover from is a fractured sense of self.", 
+    author: "Marianne Williamson" 
+  };
 
   return (
     <section id="daily-wisdom" className="section-padding bg-white">
@@ -76,6 +39,24 @@ const DailyQuote = () => {
               <div className="flex flex-col items-center justify-center space-y-4 py-10">
                 <div className="w-12 h-12 rounded-full border-2 border-divine border-t-transparent animate-spin" />
                 <p className="text-divine-dark/60 text-sm">Finding today's wisdom...</p>
+              </div>
+            ) : error ? (
+              <div className="flex flex-col items-center justify-center space-y-4 py-10">
+                <svg 
+                  xmlns="http://www.w3.org/2000/svg" 
+                  width="24" 
+                  height="24" 
+                  viewBox="0 0 24 24" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  strokeWidth="1" 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round" 
+                  className="mx-auto mb-6 text-divine-dark/50 w-10 h-10"
+                >
+                  <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <p className="text-divine-dark/60 text-sm">Could not load today's wisdom. Please try again later.</p>
               </div>
             ) : (
               <div className="relative z-10 text-center animate-fade-in">

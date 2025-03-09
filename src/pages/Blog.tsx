@@ -1,66 +1,28 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Layout from '@/components/Layout';
 import BlogCard, { BlogPost } from '@/components/BlogCard';
-
-// Sample blog posts data
-const allPosts: BlogPost[] = [
-  {
-    id: "1",
-    title: "The Path to Inner Peace Through Daily Meditation",
-    excerpt: "Discover how establishing a consistent meditation practice can transform your inner landscape and bring lasting peace to your daily life.",
-    category: "meditation",
-    date: "June 15, 2023",
-    imageSrc: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80"
-  },
-  {
-    id: "2",
-    title: "Ancient Wisdom for Modern Living: Applying Spiritual Principles Today",
-    excerpt: "How can ancient spiritual teachings help us navigate the challenges of contemporary life? This article explores practical applications of timeless wisdom.",
-    category: "teachings",
-    date: "July 3, 2023",
-    imageSrc: "https://images.unsplash.com/photo-1609710228159-0fa9bd7c0827?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80"
-  },
-  {
-    id: "3",
-    title: "The Sacred Art of Devotion: Opening Your Heart to Divine Grace",
-    excerpt: "Devotion is more than religious ritual—it's a transformative practice that can open your heart to receive divine grace and experience profound spiritual connection.",
-    category: "devotion",
-    date: "August 12, 2023",
-    imageSrc: "https://images.unsplash.com/photo-1518457607834-6e8d80c183c5?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=687&q=80"
-  },
-  {
-    id: "4",
-    title: "Finding Your Dharma: Discovering Your True Purpose in Life",
-    excerpt: "What is dharma, and how can understanding this concept help you align with your authentic purpose? Learn practical steps for uncovering your life's mission.",
-    category: "purpose",
-    date: "September 5, 2023",
-    imageSrc: "https://images.unsplash.com/photo-1533630757306-cbadb934bcb1?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1074&q=80"
-  },
-  {
-    id: "5",
-    title: "The Healing Power of Forgiveness: A Spiritual Perspective",
-    excerpt: "Forgiveness is not just a moral virtue but a powerful spiritual practice that can heal deep wounds and transform relationships. Learn the sacred approach to letting go.",
-    category: "healing",
-    date: "October 20, 2023",
-    imageSrc: "https://images.unsplash.com/photo-1617791160505-6f00504e3519?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80"
-  },
-  {
-    id: "6",
-    title: "Sacred Silence: The Transformative Power of Stillness",
-    excerpt: "In a world of constant noise and distraction, discover how embracing silence can deepen your spiritual practice and reveal profound inner truths.",
-    category: "practice",
-    date: "November 8, 2023",
-    imageSrc: "https://images.unsplash.com/photo-1551632436-cbf8dd35adfa?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1171&q=80"
-  }
-];
+import { getAllBlogs } from '@/lib/api';
+import { useQuery } from '@tanstack/react-query';
 
 // Get unique categories from posts
-const categories = ["all", ...Array.from(new Set(allPosts.map(post => post.category)))];
+const getCategories = (posts: BlogPost[]) => {
+  return ["all", ...Array.from(new Set(posts.map(post => post.category)))];
+};
 
 const Blog = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
+  
+  // Fetch blogs from API
+  const { data: allPosts = [], isLoading, error } = useQuery({
+    queryKey: ['blogs'],
+    queryFn: getAllBlogs,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: 2
+  });
+
+  const categories = getCategories(allPosts);
   
   // Filter posts based on search term and category
   const filteredPosts = allPosts.filter(post => {
@@ -130,7 +92,26 @@ const Blog = () => {
             </div>
           </div>
           
-          {filteredPosts.length > 0 ? (
+          {isLoading ? (
+            <div className="text-center py-16 divine-card">
+              <div className="w-12 h-12 rounded-full border-2 border-divine border-t-transparent animate-spin mx-auto mb-4" />
+              <p className="text-divine-dark/70">Loading teachings...</p>
+            </div>
+          ) : error ? (
+            <div className="text-center py-16 divine-card">
+              <svg 
+                xmlns="http://www.w3.org/2000/svg" 
+                className="h-16 w-16 mx-auto text-divine-light mb-4" 
+                fill="none" 
+                viewBox="0 0 24 24" 
+                stroke="currentColor"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              <h3 className="text-xl font-serif text-divine-dark mb-2">Unable to load teachings</h3>
+              <p className="text-divine-dark/70">Please try again later.</p>
+            </div>
+          ) : filteredPosts.length > 0 ? (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
               {filteredPosts.map((post, index) => (
                 <div 
