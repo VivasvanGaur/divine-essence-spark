@@ -82,7 +82,12 @@ export async function getRandomQuote(): Promise<Quote> {
 }
 
 export async function getAllQuotes(): Promise<Quote[]> {
-  const quotes = await fetchApi<any[]>("/quotes/list");
+  // Updated to handle potential nested response structure
+  const response = await fetchApi<any>("/quotes/list");
+  
+  // Handle both potential response formats
+  const quotes = Array.isArray(response) ? response : 
+                (response.data && Array.isArray(response.data)) ? response.data : [];
   
   // Map Laravel response to match our frontend Quote type
   return quotes.map(quote => ({

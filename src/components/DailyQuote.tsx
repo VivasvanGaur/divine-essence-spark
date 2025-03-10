@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { getRandomQuote } from '@/lib/api';
-import { PlusIcon } from 'lucide-react';
+import { BookOpenIcon } from 'lucide-react';
 
 const DailyQuote = () => {
   // Fetch quote from API
@@ -34,11 +34,11 @@ const DailyQuote = () => {
             </h2>
             
             <Link
-              to="/submit-quote"
+              to="/quotes"
               className="flex items-center gap-2 text-divine-dark hover:text-divine transition-colors self-start md:self-auto"
             >
-              <PlusIcon size={16} />
-              <span>Submit a Quote</span>
+              <BookOpenIcon size={16} />
+              <span>View All Quotes</span>
             </Link>
           </div>
           
