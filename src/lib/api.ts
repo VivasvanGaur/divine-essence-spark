@@ -71,7 +71,14 @@ export interface Quote {
 }
 
 export async function getRandomQuote(): Promise<Quote> {
-  return fetchApi<Quote>("/quotes/daily");
+  // Updated to handle the nested response structure with success and data properties
+  const response = await fetchApi<{success: boolean, data: {id: number, quote: string, author: string, created_at: string, updated_at: string}}>("/quotes/daily");
+  
+  // Extract the quote data from the nested structure
+  return {
+    quote: response.data.quote,
+    author: response.data.author
+  };
 }
 
 export async function getAllQuotes(): Promise<Quote[]> {
