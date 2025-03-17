@@ -1,4 +1,3 @@
-
 import { toast } from "@/components/ui/use-toast";
 import { BlogPost } from "@/components/BlogCard";
 
@@ -13,7 +12,8 @@ async function fetchApi<T>(endpoint: string, options: RequestInit = {}): Promise
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       ...options,
       headers: {
-        "Content-Type": "application/json",
+        // Only set Content-Type for non-FormData requests
+        ...(!(options.body instanceof FormData) && {"Content-Type": "application/json"}),
         ...options.headers,
       },
     });
@@ -64,11 +64,11 @@ export async function getBlogById(id: string): Promise<BlogPost> {
   };
 }
 
-// New function to update a blog post
-export async function updateBlog(id: string, blogData: any): Promise<any> {
+// Updated function to update a blog post with image support
+export async function updateBlog(id: string, blogData: FormData): Promise<any> {
   return await fetchApi(`/blogs/${id}`, {
-    method: 'PUT',
-    body: JSON.stringify(blogData)
+    method: 'POST', // Using POST with _method=PUT for FormData
+    body: blogData
   });
 }
 

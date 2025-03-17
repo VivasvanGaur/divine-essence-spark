@@ -1,11 +1,11 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table';
-import { Pencil, Trash, Plus } from 'lucide-react';
+import { Pencil, Trash, Plus, Image as ImageIcon, X } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
 import { BlogPost } from '@/components/BlogCard';
 import { getAllBlogs, updateBlog, deleteBlog } from '@/lib/api';
@@ -15,6 +15,8 @@ const AdminBlogManagement = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [currentBlog, setCurrentBlog] = useState<BlogPost | null>(null);
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [formData, setFormData] = useState({
     title: '',
@@ -48,12 +50,20 @@ const AdminBlogManagement = () => {
     
     try {
       if (currentBlog) {
+        // Create FormData object for multipart/form-data submission
+        const formDataObj = new FormData();
+        formDataObj.append('title', formData.title);
+        formDataObj.append('content', formData.content);
+        formDataObj.append('tag', formData.category);
+        formDataObj.append('_method', 'PUT'); // Laravel requires this for method spoofing
+        
+        // Only append image if a new one is selected
+        if (selectedImage) {
+          formDataObj.append('image', selectedImage);
+        }
+        
         // Update existing blog
-        await updateBlog(currentBlog.id, {
-          title: formData.title,
-          content: formData.content,
-          tag: formData.category
-        });
+        await updateBlog(currentBlog.id, formDataObj);
         
         toast({
           title: "Blog updated",
@@ -67,9 +77,12 @@ const AdminBlogManagement = () => {
         });
       }
       
+      // Reset form state
       setShowForm(false);
       setCurrentBlog(null);
       setFormData({ title: '', content: '', category: '' });
+      setSelectedImage(null);
+      
       // Reload blogs after save
       loadBlogs();
     } catch (error) {
@@ -86,6 +99,19 @@ const AdminBlogManagement = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setSelectedImage(e.target.files[0]);
+    }
+  };
+
+  const handleClearImage = () => {
+    setSelectedImage(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
   const handleEdit = (blog: BlogPost) => {
     setCurrentBlog(blog);
     setFormData({
@@ -93,6 +119,7 @@ const AdminBlogManagement = () => {
       content: blog.content || '',
       category: blog.category
     });
+    setSelectedImage(null); // Reset selected image when editing
     setShowForm(true);
   };
 
@@ -125,6 +152,7 @@ const AdminBlogManagement = () => {
             setShowForm(!showForm);
             setCurrentBlog(null);
             setFormData({ title: '', content: '', category: '' });
+            setSelectedImage(null);
           }}
           className="flex items-center gap-2"
         >
@@ -177,6 +205,79 @@ const AdminBlogManagement = () => {
               rows={8}
               required
             />
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="image">Blog Image</Label>
+            
+            {/* Current image display */}
+            {currentBlog?.imageSrc && !selectedImage && (
+              <div className="mb-4">
+                <p className="text-sm text-divine-dark/60 mb-2">Current image:</p>
+                <div className="relative w-full max-w-xs h-40 rounded-md overflow-hidden bg-divine-light/20">
+                  <img 
+                    src={currentBlog.imageSrc} 
+                    alt="Current blog image" 
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              </div>
+            )}
+            
+            {/* Selected new image preview */}
+            {selectedImage && (
+              <div className="mb-4">
+                <p className="text-sm text-divine-dark/60 mb-2">New image preview:</p>
+                <div className="relative w-full max-w-xs h-40 rounded-md overflow-hidden bg-divine-light/20">
+                  <img 
+                    src={URL.createObjectURL(selectedImage)} 
+                    alt="Selected blog image" 
+                    className="w-full h-full object-cover"
+                  />
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="sm"
+                    className="absolute top-2 right-2 w-8 h-8 p-0 rounded-full"
+                    onClick={handleClearImage}
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+            )}
+            
+            {/* Image input */}
+            <div className="flex items-center gap-2">
+              <Input
+                ref={fileInputRef}
+                id="image"
+                name="image"
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                className="hidden"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => fileInputRef.current?.click()}
+                className="flex items-center gap-2"
+              >
+                <ImageIcon className="w-4 h-4" />
+                {currentBlog?.imageSrc ? 'Change Image' : 'Upload Image'}
+              </Button>
+              {selectedImage && (
+                <span className="text-sm text-divine-dark/60">
+                  {selectedImage.name} ({Math.round(selectedImage.size / 1024)} KB)
+                </span>
+              )}
+            </div>
+            <p className="text-xs text-divine-dark/60 mt-1">
+              {currentBlog?.imageSrc 
+                ? 'Leave empty to keep the current image.' 
+                : 'Select an image for the blog post.'}
+            </p>
           </div>
           
           <div className="flex justify-end">
