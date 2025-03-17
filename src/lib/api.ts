@@ -64,8 +64,24 @@ export async function getBlogById(id: string): Promise<BlogPost> {
   };
 }
 
+// New function to update a blog post
+export async function updateBlog(id: string, blogData: any): Promise<any> {
+  return await fetchApi(`/blogs/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(blogData)
+  });
+}
+
+// New function to delete a blog post
+export async function deleteBlog(id: string): Promise<any> {
+  return await fetchApi(`/blogs/${id}`, {
+    method: 'DELETE'
+  });
+}
+
 // Quote API endpoints
 export interface Quote {
+  id?: number;
   quote: string;
   author: string;
 }
@@ -76,6 +92,7 @@ export async function getRandomQuote(): Promise<Quote> {
   
   // Extract the quote data from the nested structure
   return {
+    id: response.data.id,
     quote: response.data.quote,
     author: response.data.author
   };
@@ -91,7 +108,23 @@ export async function getAllQuotes(): Promise<Quote[]> {
   
   // Map Laravel response to match our frontend Quote type
   return quotes.map(quote => ({
+    id: quote.id,
     quote: quote.quote,
     author: quote.author
   }));
+}
+
+// New function to update a quote
+export async function updateQuote(id: number, quoteData: any): Promise<any> {
+  return await fetchApi(`/quotes/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(quoteData)
+  });
+}
+
+// New function to delete a quote
+export async function deleteQuote(id: number): Promise<any> {
+  return await fetchApi(`/quotes/${id}`, {
+    method: 'DELETE'
+  });
 }

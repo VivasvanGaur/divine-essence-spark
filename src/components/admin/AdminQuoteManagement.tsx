@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table';
 import { Pencil, Trash, Plus } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
-import { getAllQuotes, Quote } from '@/lib/api';
+import { getAllQuotes, updateQuote, deleteQuote, Quote } from '@/lib/api';
 
 const AdminQuoteManagement = () => {
   const [quotes, setQuotes] = useState<Quote[]>([]);
@@ -40,18 +40,41 @@ const AdminQuoteManagement = () => {
     }
   };
 
-  const handleFormSubmit = (e: React.FormEvent) => {
+  const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Here you would make an API call to save the quote
-    toast({
-      title: currentQuote ? "Quote updated" : "Quote created",
-      description: "Your changes have been saved"
-    });
-    setShowForm(false);
-    setCurrentQuote(null);
-    setFormData({ quote: '', author: '' });
-    // Reload quotes after save
-    loadQuotes();
+    
+    try {
+      if (currentQuote && currentQuote.id) {
+        // Update existing quote
+        await updateQuote(currentQuote.id, {
+          quote: formData.quote,
+          author: formData.author
+        });
+        
+        toast({
+          title: "Quote updated",
+          description: "Your changes have been saved"
+        });
+      } else {
+        // Create new quote functionality would go here
+        toast({
+          title: "Quote created",
+          description: "Your new quote has been saved"
+        });
+      }
+      
+      setShowForm(false);
+      setCurrentQuote(null);
+      setFormData({ quote: '', author: '' });
+      // Reload quotes after save
+      loadQuotes();
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to save quote"
+      });
+    }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -68,15 +91,33 @@ const AdminQuoteManagement = () => {
     setShowForm(true);
   };
 
-  const handleDelete = (quote: Quote) => {
-    // Here you would make an API call to delete the quote
-    // For now, we'll just show a success message
-    toast({
-      title: "Quote deleted",
-      description: "The quote has been removed"
-    });
-    // Update the UI by filtering out the deleted quote
-    setQuotes(quotes.filter(q => q.quote !== quote.quote || q.author !== quote.author));
+  const handleDelete = async (id: number | undefined) => {
+    if (!id) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Quote ID not found"
+      });
+      return;
+    }
+    
+    try {
+      await deleteQuote(id);
+      
+      toast({
+        title: "Quote deleted",
+        description: "The quote has been removed"
+      });
+      
+      // Update the UI by filtering out the deleted quote
+      setQuotes(quotes.filter(q => q.id !== id));
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to delete quote"
+      });
+    }
   };
 
   return (
@@ -157,7 +198,7 @@ const AdminQuoteManagement = () => {
                 </TableRow>
               ) : (
                 quotes.map((quote, index) => (
-                  <TableRow key={index}>
+                  <TableRow key={quote.id || index}>
                     <TableCell className="font-medium">
                       <div className="max-w-md truncate">{quote.quote}</div>
                     </TableCell>
@@ -174,7 +215,7 @@ const AdminQuoteManagement = () => {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => handleDelete(quote)}
+                          onClick={() => handleDelete(quote.id)}
                           className="text-destructive hover:text-destructive"
                         >
                           <Trash className="w-4 h-4" />

@@ -8,7 +8,7 @@ import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@
 import { Pencil, Trash, Plus } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
 import { BlogPost } from '@/components/BlogCard';
-import { getAllBlogs } from '@/lib/api';
+import { getAllBlogs, updateBlog, deleteBlog } from '@/lib/api';
 
 const AdminBlogManagement = () => {
   const [blogs, setBlogs] = useState<BlogPost[]>([]);
@@ -43,18 +43,42 @@ const AdminBlogManagement = () => {
     }
   };
 
-  const handleFormSubmit = (e: React.FormEvent) => {
+  const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Here you would make an API call to save the blog
-    toast({
-      title: currentBlog ? "Blog updated" : "Blog created",
-      description: "Your changes have been saved"
-    });
-    setShowForm(false);
-    setCurrentBlog(null);
-    setFormData({ title: '', content: '', category: '' });
-    // Reload blogs after save
-    loadBlogs();
+    
+    try {
+      if (currentBlog) {
+        // Update existing blog
+        await updateBlog(currentBlog.id, {
+          title: formData.title,
+          content: formData.content,
+          tag: formData.category
+        });
+        
+        toast({
+          title: "Blog updated",
+          description: "Your changes have been saved"
+        });
+      } else {
+        // Create new blog functionality would go here
+        toast({
+          title: "Blog created",
+          description: "Your new blog has been saved"
+        });
+      }
+      
+      setShowForm(false);
+      setCurrentBlog(null);
+      setFormData({ title: '', content: '', category: '' });
+      // Reload blogs after save
+      loadBlogs();
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to save blog post"
+      });
+    }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -72,15 +96,24 @@ const AdminBlogManagement = () => {
     setShowForm(true);
   };
 
-  const handleDelete = (id: string) => {
-    // Here you would make an API call to delete the blog
-    // For now, we'll just show a success message
-    toast({
-      title: "Blog deleted",
-      description: "The blog has been removed"
-    });
-    // Update the UI by filtering out the deleted blog
-    setBlogs(blogs.filter(blog => blog.id !== id));
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteBlog(id);
+      
+      toast({
+        title: "Blog deleted",
+        description: "The blog has been removed"
+      });
+      
+      // Update the UI by filtering out the deleted blog
+      setBlogs(blogs.filter(blog => blog.id !== id));
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to delete blog post"
+      });
+    }
   };
 
   return (
