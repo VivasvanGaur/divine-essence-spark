@@ -4,6 +4,8 @@ import ScrollingMantra from '@/components/ScrollingMantra';
 import DailyQuote from '@/components/DailyQuote';
 import { Link } from 'react-router-dom';
 import Layout from '@/components/Layout';
+import { Button } from '@/components/ui/button';
+import { Lock } from 'lucide-react';
 
 const Index = () => {
   return (
@@ -124,6 +126,16 @@ const Index = () => {
           </div>
         </div>
       </section>
+      
+      {/* Admin Login Button */}
+      <div className="fixed bottom-4 right-4 z-10">
+        <Link to="/login">
+          <Button variant="outline" size="sm" className="flex items-center gap-2 bg-white/80 backdrop-blur-sm border-divine/20">
+            <Lock className="w-4 h-4" />
+            Admin
+          </Button>
+        </Link>
+      </div>
     </Layout>
   );
 };

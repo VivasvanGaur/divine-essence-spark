@@ -12,6 +12,8 @@ import BlogPost from "./pages/BlogPost";
 import Contact from "./pages/Contact";
 import AllQuotes from "./pages/AllQuotes";
 import NotFound from "./pages/NotFound";
+import AdminLogin from "./pages/AdminLogin";
+import AdminDashboard from "./pages/AdminDashboard";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -35,6 +37,11 @@ const App = () => (
           <Route path="/blog/:id" element={<BlogPost />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/quotes" element={<AllQuotes />} />
+          
+          {/* Admin Routes */}
+          <Route path="/login" element={<AdminLogin />} />
+          <Route path="/dashboard" element={<AdminDashboard />} />
+          
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
