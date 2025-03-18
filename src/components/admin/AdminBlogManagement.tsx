@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,7 +7,7 @@ import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@
 import { Pencil, Trash, Plus, Image as ImageIcon, X } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
 import { BlogPost } from '@/components/BlogCard';
-import { getAllBlogs, updateBlog, deleteBlog } from '@/lib/api';
+import { getAllBlogs, createBlog, updateBlog, deleteBlog } from '@/lib/api';
 
 const AdminBlogManagement = () => {
   const [blogs, setBlogs] = useState<BlogPost[]>([]);
@@ -49,19 +48,18 @@ const AdminBlogManagement = () => {
     e.preventDefault();
     
     try {
+      // Create FormData object for multipart/form-data submission
+      const formDataObj = new FormData();
+      formDataObj.append('title', formData.title);
+      formDataObj.append('content', formData.content);
+      formDataObj.append('tag', formData.category);
+      
+      // Only append image if a new one is selected
+      if (selectedImage) {
+        formDataObj.append('image', selectedImage);
+      }
+      
       if (currentBlog) {
-        // Create FormData object for multipart/form-data submission
-        const formDataObj = new FormData();
-        formDataObj.append('title', formData.title);
-        formDataObj.append('content', formData.content);
-        formDataObj.append('tag', formData.category);
-        formDataObj.append('_method', 'PUT'); // Laravel requires this for method spoofing
-        
-        // Only append image if a new one is selected
-        if (selectedImage) {
-          formDataObj.append('image', selectedImage);
-        }
-        
         // Update existing blog
         await updateBlog(currentBlog.id, formDataObj);
         
@@ -70,7 +68,9 @@ const AdminBlogManagement = () => {
           description: "Your changes have been saved"
         });
       } else {
-        // Create new blog functionality would go here
+        // Create new blog
+        await createBlog(formDataObj);
+        
         toast({
           title: "Blog created",
           description: "Your new blog has been saved"
@@ -86,6 +86,7 @@ const AdminBlogManagement = () => {
       // Reload blogs after save
       loadBlogs();
     } catch (error) {
+      console.error('Error saving blog:', error);
       toast({
         variant: "destructive",
         title: "Error",

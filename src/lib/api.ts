@@ -1,3 +1,4 @@
+
 import { toast } from "@/components/ui/use-toast";
 import { BlogPost } from "@/components/BlogCard";
 
@@ -34,6 +35,14 @@ async function fetchApi<T>(endpoint: string, options: RequestInit = {}): Promise
   }
 }
 
+// New function to create a blog post
+export async function createBlog(blogData: FormData): Promise<any> {
+  return await fetchApi('/blogs', {
+    method: 'POST',
+    body: blogData
+  });
+}
+
 // Updated Blog API endpoints to match Laravel response structure
 export async function getAllBlogs(): Promise<BlogPost[]> {
   const response = await fetchApi<any[]>("/blogs");
@@ -64,8 +73,11 @@ export async function getBlogById(id: string): Promise<BlogPost> {
   };
 }
 
-// Updated function to update a blog post with image support
+// Fixed function to update a blog post with correct HTTP method
 export async function updateBlog(id: string, blogData: FormData): Promise<any> {
+  // Add _method=PUT to the FormData for Laravel method spoofing
+  blogData.append('_method', 'PUT');
+  
   return await fetchApi(`/blogs/${id}`, {
     method: 'POST', // Using POST with _method=PUT for FormData
     body: blogData
